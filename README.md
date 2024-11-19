@@ -1,29 +1,104 @@
-# test-nginx
+# Configuración de un Servidor Web con Nginx y FTP Seguro
 
-¿Qué pasa si no hago el link simbólico entre sites-available y sites-enabled de mi sitio web?
+## **Introducción**
 
-Si no creas el enlace simbólico entre sites-available y sites-enabled, Nginx no va a reconocer el sitio y no lo servirá. Es como si configuraras un sitio web, pero no le dieras la llave para que Nginx lo pueda leer. Lo único que habrías hecho sería crear el archivo de configuración, pero Nginx no lo cargaría, por lo que el sitio no estaría disponible para los usuarios.
+En esta práctica configuré un servidor web con Nginx en una máquina virtual Debian a través de Vagrant. El objetivo era alojar dos sitios web:
 
-La solución es simple: crear el enlace simbólico, lo cual permite que Nginx "activa" tu sitio. Sin este enlace, aunque lo hayas configurado bien, el servidor web no lo podrá servir.
+1. Uno utilizando **Git** para descargar los archivos.
+2. Otro configurado para recibir archivos mediante **FTPES** (FTP seguro).
 
-¿Qué pasa si no le doy los permisos adecuados a /var/www/nombre_web?
+---
 
-Si no le das los permisos correctos a los archivos de tu sitio web, básicamente estarás bloqueando el acceso de Nginx a esos archivos. Nginx necesita permisos de lectura (al menos) sobre los archivos del sitio para poder servirlos cuando un usuario los pida. Si no tiene esos permisos, se pueden dar errores como 403 (Forbidden), que es el servidor diciendo que no puede acceder a los archivos, aunque los haya encontrado.
+## **Preguntas Frecuentes**
 
-Además, si los permisos no son los adecuados, podrías estar poniéndole en riesgo la seguridad del servidor, permitiendo que otros usuarios accedan o modifiquen los archivos del sitio. Por eso es importante dar los permisos adecuados, donde el propietario del directorio debe ser www-data, que es el usuario con el que Nginx trabaja.
+### **¿Qué pasa si no hago el enlace simbólico entre `sites-available` y `sites-enabled` de mi sitio web?**
 
-Resumen de la práctica:
-En esta práctica hemos configurado un servidor web con Nginx en una máquina virtual Debian a través de Vagrant. Nuestro objetivo era alojar dos sitios web, uno utilizando Git para descargar los archivos y el otro configurado para recibir archivos mediante FTPES (FTP seguro).
+Si no creo el enlace simbólico entre `sites-available` y `sites-enabled`, Nginx no reconocerá el sitio y no lo servirá. Es como si configurara un sitio web, pero no le diera la "llave" para que Nginx lo lea. Solo habría creado el archivo de configuración, pero Nginx no lo cargaría, por lo que el sitio no estaría disponible para los usuarios.
 
-Configuración de Nginx:
+**Solución:**  
+Crear el enlace simbólico, lo que permite que Nginx "active" el sitio. Sin este enlace, aunque la configuración sea correcta, el servidor web no podrá servir el sitio.
 
-Clonamos los sitios web desde GitHub y los sincronizamos en las carpetas /var/www/site1 y /var/www/site2.
-Configuramos Nginx para que sirviera ambos sitios, asegurándonos de crear los archivos de configuración necesarios en /etc/nginx/sites-available/ y habilitándolos con enlaces simbólicos en /etc/nginx/sites-enabled/. Sin este paso, Nginx no serviría los sitios.
-Configuración de FTPES:
+---
 
-Instalamos y configuramos vsftpd para habilitar FTPES en el puerto 21, permitiendo que los archivos de site2 se transfirieran de forma segura a través de FTP.
-Creamos un usuario FTP y le otorgamos los permisos adecuados para que solo pueda acceder a los archivos de site2.
-Problemas encontrados:
-Uno de los principales problemas fue olvidarnos de crear el enlace simbólico entre sites-available y sites-enabled, lo cual hizo que uno de los sitios no estuviera disponible. También, al principio no configuramos correctamente los permisos de los archivos de los sitios, lo que causó que Nginx no pudiera acceder a ellos y aparecieran errores 403. Una vez corregidos estos detalles, todo funcionó correctamente.
+### **¿Qué pasa si no le doy los permisos adecuados a `/var/www/nombre_web`?**
 
-En resumen, la práctica nos enseñó cómo configurar un servidor web completo con Nginx, cómo manejar los permisos y cómo habilitar FTP seguro para la transferencia de archivos.
+Si no doy los permisos correctos a los archivos de mi sitio web, estaré bloqueando el acceso de Nginx a esos archivos.  
+Nginx necesita al menos **permisos de lectura** sobre los archivos del sitio para servirlos cuando un usuario los solicite. Si no tiene esos permisos, pueden aparecer errores como:
+
+- **403 Forbidden:** Indica que el servidor no puede acceder a los archivos, aunque los haya encontrado.
+
+Además, si los permisos no son los adecuados, podría comprometer la **seguridad del servidor**, permitiendo que otros usuarios accedan o modifiquen los archivos del sitio.
+
+**Recomendación:**  
+El propietario del directorio debe ser `www-data`, que es el usuario con el que trabaja Nginx.
+
+---
+
+## **Pasos de Configuración**
+
+### **Configuración de Nginx**
+
+1. **Clonación de repositorios:**  
+   Cloné los sitios web desde GitHub y sincronicé los archivos en las carpetas:  
+   - `/var/www/site1`
+   - `/var/www/site2`
+
+2. **Configuración de sitios web:**  
+   - Creé los archivos de configuración necesarios en `/etc/nginx/sites-available/`.  
+   - Habilité los sitios mediante enlaces simbólicos en `/etc/nginx/sites-enabled/`.  
+   - Comprobé la configuración y recargué Nginx:
+
+     ```bash
+     sudo ln -s /etc/nginx/sites-available/site1 /etc/nginx/sites-enabled/
+     sudo ln -s /etc/nginx/sites-available/site2 /etc/nginx/sites-enabled/
+     sudo nginx -t
+     sudo systemctl reload nginx
+     ```
+
+3. **Resolución de problemas:**  
+   - Al modificar el archivo `/etc/hosts` en Windows, tuve que guardar los cambios con permisos de administrador.  
+   - Una vez resuelto, todo funcionó correctamente.
+
+---
+
+### **Configuración de FTPES**
+
+1. **Instalación de vsftpd:**  
+   Instalé y configuré `vsftpd` para habilitar FTP seguro (FTPES) en el puerto 21.
+
+2. **Configuración de usuario:**  
+   Creé un usuario FTP y configuré permisos para que solo pudiera acceder a los archivos en `/var/www/site2`.  
+
+   ```bash
+   sudo useradd -m ftpuser
+   sudo passwd ftpuser
+   sudo chown -R ftpuser:ftpuser /var/www/site2
+## **Problemas Encontrados y Soluciones**
+
+### **Enlace simbólico no creado**  
+Sin el enlace simbólico entre `sites-available` y `sites-enabled`, Nginx no podía servir uno de los sitios.  
+
+**Solución:**  
+Creé los enlaces simbólicos correspondientes.
+
+### **Permisos incorrectos**  
+Al inicio, los permisos de los archivos no permitían que Nginx accediera a ellos, lo que generaba errores **403 Forbidden**.  
+
+**Solución:**  
+Configuré los permisos adecuados y me aseguré de que el propietario del directorio fuera `www-data`.
+
+---
+
+## **Conclusión**
+
+En esta práctica aprendí a:
+
+- Configurar un servidor web completo con Nginx.  
+- Manejar permisos correctamente para garantizar que Nginx pueda acceder a los archivos del sitio.  
+- Habilitar FTP seguro para la transferencia de archivos.  
+
+---
+
+**Autor:**  
+Nicolás Sánchez  
+[@nicosm23gh](https://github.com/nicosm23gh)
