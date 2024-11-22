@@ -89,6 +89,10 @@ Configuré los permisos adecuados y me aseguré de que el propietario del direct
 
 ---
 
+Logré configurar satisfactoriamente el ftpes y enviar los archivos desde el directorio local al de la máquina virtual
+
+![alt text](image.png)
+
 ## **Conclusión**
 
 En esta práctica aprendí a:
