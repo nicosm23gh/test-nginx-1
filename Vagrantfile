@@ -1,4 +1,4 @@
-Vagrant.configure("2") do |config|
+Vagrant.configure("2") do |config| 
   config.vm.define "nginx-ftps-server" do |nginx_server|
     nginx_server.vm.box = "debian/bookworm64"
 
@@ -16,6 +16,7 @@ Vagrant.configure("2") do |config|
     # Carpetas sincronizadas
     nginx_server.vm.synced_folder "site1", "/var/www/site1", create: true
     nginx_server.vm.synced_folder "site2", "/var/www/site2", create: true
+    nginx_server.vm.synced_folder "./perfect-html-education/html", "/var/www/perfect-html-education/html", create: true
 
     # Aprovisionamiento de la máquina
     nginx_server.vm.provision "shell", inline: <<-SHELL
@@ -33,7 +34,7 @@ Vagrant.configure("2") do |config|
       echo "192.168.56.101    site1" | sudo tee -a /etc/hosts
       sudo systemctl restart nginx
 
-       # Configuración de Nginx para site2 (servidor FTP)
+      # Configuración de Nginx para site2 (servidor FTP)
       echo 'server { listen 80; listen [::]:80; root /var/www/site2/html; index index.html index.htm index.nginx-debian.html; server_name site2; location / { try_files $uri $uri/ =404; } }' | sudo tee /etc/nginx/sites-available/site2
       sudo ln -sf /etc/nginx/sites-available/site2 /etc/nginx/sites-enabled/
 
@@ -55,7 +56,7 @@ Vagrant.configure("2") do |config|
       Organization
       Unit
       admin@example.com
-      EOF
+EOF
       
       # Configurar vsftpd para site2
       sudo cp -v /vagrant/vsftpd.conf /etc/vsftpd.conf
@@ -66,6 +67,15 @@ Vagrant.configure("2") do |config|
       sudo touch /var/log/vsftpd.log
       sudo chmod 640 /var/log/vsftpd.log
       sudo chown root:adm /var/log/vsftpd.log
+
+      # Configuración de Nginx para perfect-html-education
+      sudo mkdir -p /var/www/perfect-html-education/html
+      sudo chown -R www-data:www-data /var/www/perfect-html-education/html
+      sudo chmod -R 755 /var/www/perfect-html-education
+      sudo nano /etc/nginx/sites-available/perfect-html-education
+      echo 'server { listen 80; listen [::]:80; root /var/www/perfect-html-education/html; index index.html index.htm index.nginx-debian.html; server_name perfect-html-education; location / { auth_basic "Área restringida"; auth_basic_user_file /etc/nginx/.htpasswd; try_files $uri $uri/ =404; } }' | sudo tee /etc/nginx/sites-available/perfect-html-education
+      sudo ln -sf /etc/nginx/sites-available/perfect-html-education /etc/nginx/sites-enabled/
+      echo "192.168.56.101    perfect-html-education" | sudo tee -a /etc/hosts
 
       sudo systemctl restart nginx
     SHELL
