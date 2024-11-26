@@ -29,18 +29,36 @@ Vagrant.configure("2") do |config|
       sudo git clone https://github.com/cloudacademy/static-website-example /var/www/site1/html
       sudo chown -R www-data:www-data /var/www/site1/html
       sudo chmod -R 755 /var/www/site1
-      echo 'server { listen 80; listen [::]:80; root /var/www/site1/html; index index.html index.htm index.nginx-debian.html; server_name site1; location / { try_files $uri $uri/ =404; } }' | sudo tee /etc/nginx/sites-available/site1
+      echo 'server { 
+              listen 80; 
+              listen [::]:80; 
+              root /var/www/site1/html; 
+              index index.html index.htm index.nginx-debian.html; 
+              server_name site1; 
+              location / { 
+                try_files $uri $uri/ =404; 
+              }
+            }' | sudo tee /etc/nginx/sites-available/site1
       sudo ln -sf /etc/nginx/sites-available/site1 /etc/nginx/sites-enabled/
       echo "192.168.56.101    site1" | sudo tee -a /etc/hosts
       sudo systemctl restart nginx
 
       # Configuración de Nginx para site2 (servidor FTP)
-      echo 'server { listen 80; listen [::]:80; root /var/www/site2/html; index index.html index.htm index.nginx-debian.html; server_name site2; location / { try_files $uri $uri/ =404; } }' | sudo tee /etc/nginx/sites-available/site2
+      echo 'server { 
+              listen 80; 
+              listen [::]:80; 
+              root /var/www/site2/html; 
+              index index.html index.htm index.nginx-debian.html; 
+              server_name site2; 
+              location / { 
+                try_files $uri $uri/ =404; 
+              } 
+            }' | sudo tee /etc/nginx/sites-available/site2
       sudo ln -sf /etc/nginx/sites-available/site2 /etc/nginx/sites-enabled/
 
       # Configuración de FTP (solo para site2)
       sudo mkdir -p /var/www/site2/html
-      sudo chown -R ftpuser:ftpuser /var/www/site2/html
+      sudo chown -R "ftpuser:ftpuser" /var/www/site2/html
       sudo chmod -R 755 /var/www/site2
 
       # Crear un usuario FTP para site2
@@ -49,14 +67,7 @@ Vagrant.configure("2") do |config|
 
       # Crear certificados SSL para FTP
       sudo mkdir -p /etc/ssl/private
-      sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.crt <<EOF
-      US
-      Some State
-      Some City
-      Organization
-      Unit
-      admin@example.com
-EOF
+      sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.crt 
       
       # Configurar vsftpd para site2
       sudo cp -v /vagrant/vsftpd.conf /etc/vsftpd.conf
@@ -73,7 +84,18 @@ EOF
       sudo chown -R www-data:www-data /var/www/perfect-html-education/html
       sudo chmod -R 755 /var/www/perfect-html-education
       sudo nano /etc/nginx/sites-available/perfect-html-education
-      echo 'server { listen 80; listen [::]:80; root /var/www/perfect-html-education/html; index index.html index.htm index.nginx-debian.html; server_name perfect-html-education; location / { auth_basic "Área restringida"; auth_basic_user_file /etc/nginx/.htpasswd; try_files $uri $uri/ =404; } }' | sudo tee /etc/nginx/sites-available/perfect-html-education
+      echo 'server { 
+              listen 80; 
+              listen [::]:80; 
+              root /var/www/perfect-html-education/html; 
+              index index.html index.htm index.nginx-debian.html; 
+              server_name perfect-html-education; 
+              location / { 
+                auth_basic "Área restringida"; 
+                auth_basic_user_file /etc/nginx/.htpasswd; 
+                try_files $uri $uri/ =404; 
+                } 
+            }' | sudo tee /etc/nginx/sites-available/perfect-html-education
       sudo ln -sf /etc/nginx/sites-available/perfect-html-education /etc/nginx/sites-enabled/
       echo "192.168.56.101    perfect-html-education" | sudo tee -a /etc/hosts
 
